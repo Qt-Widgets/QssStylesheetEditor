@@ -1,19 +1,33 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
+
 # with open("readme.md", "r", encoding='utf-8') as fh:
-    # long_desc = fh.read()
+# long_desc = fh.read()
+
+# import os
+# def clearpyc(srcpath):
+    # files = os.listdir(srcpath)
+    # for fd in files:
+        # cur_path = os.path.join(srcpath, fd)            
+        # if os.path.isdir(cur_path):
+            # if fd == "__pycache__":
+                # print("rm %s -rf" % cur_path)
+                # os.system("rm %s -rf" % cur_path)
+            # else:
+                # clearpyc(cur_path)
+# clearpyc(os.path.join(os.path.dirname(__file__),'src'))
 
 setup(
     name="QssStylesheetEditor",  # ProjectName
-    version="1.5",
+    version="1.7",
     python_requires='>=3.0.*, <4',  # python的依赖关系
-    install_requires=['PyQt5', 'Qscintilla'],
+    install_requires=['CodeEditor', 'preimport', 'tomlconfig'],
 
     # Module
     package_dir={'': 'src'},  # tell distutils packages are under src
     packages=find_packages(where='src', include=('*'), exclude=[
-        '*.bak',
+        '*.__pycache__',
     ]),  #
     py_modules=['app', 'bootstrapper'],  # single file
 
@@ -29,33 +43,39 @@ setup(
         '': [
             '*.ts',
             '*.qrc',
+            '__pycache__/*.*',
         ],
         'res': [
             'img',
         ],
-        'data':['__init__.py'] # not work
+        # 'data': ['__init__.py']  # not work
     },
 
     # excutable
-    # scripts=['src/app.py','src/bootstrapper.py'],# 指定脚本会被安装到Python3x/Scripts下
+    # scripts=['src/app.py','src/__main__.py'],# 指定脚本会被安装到Python3x/Scripts下
     entry_points={
-        "console_scripts":[
-        'qsseditor = bootstrapper', # create qsseditor.exe in Python3x/Scripts
-        'qssteditor =  app:main', # app:main
+        "console_scripts": [
+            'qsseditor = app:main',  # create qsseditor.exe in Python3x/Scripts
+            'qssteditor = app:main',  # __main__
         ],
-        "gui_scripts":[
-        'QssStylesheetEditor = bootstrapper',
+        "gui_scripts": [
+            'QssStylesheetEditor = bootstrapper',
         ]
     },
 
     # metadata to display on PyPI
     author='lileilei',
     author_email='hustlei@sina.cn',
-    description="A Qt Stylesheet(QSS) editor",
+    description="A Qt Stylesheet(QSS) CodeEditor",
     keywords="QSS",
     # long_description=long_desc,
     # long_description_content_type="text/markdown",
-    url="https://github.com/hustlei/QssStylesheetEditor"  # project home page, if any
+    url="https://github.com/hustlei/QssStylesheetEditor",  # project home page, if any
+    classifiers=[
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
+    ],
 )
 
 # <https://www.jianshu.com/p/e0e7420e3141>

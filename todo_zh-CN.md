@@ -2,8 +2,6 @@
 
 # ToDo
 
-+ 重构代码
-    - 重写编辑器的设置部分
 + 增加 Qsst 示例
 + 帮助文档
     - 帮助
@@ -13,6 +11,25 @@
     - > qss 只支持 /* */ 方式块注释 , 增加行注释语法？
 
 # ChangeLog
+
+
+## v1.6
+主要修改: **重构config, 修复ISSUE中提到的bug**
+
++ **New Features**
+    - 增加自动导出qss的功能，每次保存自动导出qss
++ **BugsFixed**
+    - 修复ISSUE中提到的BUG
+
+## v1.6
+主要修改: **重构editor和config部分到单独的包中，各个操作系统测试**
+
++ **New Features**
+    - 增加用 `python setup.py install` 命令安装的zip包
+    - 重写编辑器的设置部分, 并把codeeditor和config部分分离到单独的包中，并上传到pypi
++ **BugsFixed**
+    - 修复 chardet import 错误
+    - 修复二进制文件失败错误
 
 ## v1.5
 主要修改：**引用资源文件中的图片**

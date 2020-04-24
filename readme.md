@@ -13,6 +13,9 @@ QssStylesheetEditor is a powerful qt stylesheet(QSS) editor.
 Real-time preview, automatically completion, and user can define custom variables.
 
 
+> **Now I want to change a new name for QssStylesheetEditor, welcome everyone to vote: <https://github.com/hustlei/QssStylesheetEditor/issues/4>**
+
+
 # screenshot
 
 ![GUI(v1.5) screeshot](https://hustlei.github.io/software/QssStylesheetEditor/screenshot/en/QssStylesheetEditor_v1.5.png  "GUI(v1.5)")
@@ -27,13 +30,13 @@ Real-time preview, automatically completion, and user can define custom variable
 + Change variable color through color dialog box
 + Reference image by relative path
 + Reference image in resource files
-+ Switch different system themes(xp, vista etc.)
++ Switch different system themes (xp, vista etc.)
 + Internationalization
-  + Now Chinese and English translation is available
+  + Now Chinese and English translations are available
 
 # Platform
 
-+ Windows(maybe can't run on xp)
++ Windows (maybe won't run on xp)
 + macOS
 + Linux
 + UNIX
@@ -43,24 +46,34 @@ Real-time preview, automatically completion, and user can define custom variable
 
 Follow the steps as below, or install the binary installation package:
 
-1. install python3: following <http://python.org/>
-2. install PyQt5: `pip instll PyQt5`
-3. install Qscintilla: `pip instll Qscintilla`
-4. Download and unzip QssStylesheetEditor
-5. change dir to "QssStylesheetEditor/src" and double click app.py or run `python app.py`
+1. download [QssStylesheetEditor-1.6-py3-none-any.whl](https://github.com/hustlei/QssStylesheetEditor/releases)
+2. run `pip install QssStylesheetEditor-1.6-py3-none-any.whl` install QssStylesheetEditor
+3. run `qsseditor` or `QssStylesheetEditor` the app will started
 
-## Binary installation package
+If you are windows 64bit user, binary package and installer is available now.
 
-Now there is only installer for windows 64bit is available.
++ [QssStylesheetEditor1.6_win64_installer.exe](https://github.com/hustlei/QssStylesheetEditor/releases)
++ QssStylesheetEditor1.6_win64_portable.7z [[Download]](https://pan.baidu.com/s/1d8QJH6EbGcZXi7GjbkPlsQ) (security code: j7fc)
 
-Download:
 
-+ QssStylesheetEditor_1.5_win64_installer **[[Download]](https://pan.baidu.com/s/1Wd_j_KMBcI9JBY4qDgswMg)**(secuirity code: auhq)
-+ QssStylesheetEditor_1.5_win64_portable  **[[Download]](https://pan.baidu.com/s/1cIValPom3TWRGdpwDlKtdw)**(secuirity code: brtj)
+> Alternatively, manually install the package is ok too
+> 
+>> 1. install python3: following <http://python.org/>
+>> 2. install dependencies:
+>>     - preimport: `pip install preimport`
+>>     - tomlconfig: `pip install tomlconfig`
+>>     - CodeEditor: `pip install CodeEditor`
+>> 3. download and unzip package:
+>>     + download [QssStylesheetEditor_v1.6.zip](https://github.com/hustlei/QssStylesheetEditor/releases)
+>>     + unzip and change dir to QssStylesheetEditor_v1.6 `cd QssStylesheetEditor_v1.6`
+>> 4. Run QssStylesheetEditor:
+>>     + double click qsseditor.pyw
+>>     + or run `python qsseditor.pyw`
+
 
 ## Using custom variable 
 
-In QssStylesheetEditor, users can define and use custome variables in QSS. 
+In QssStylesheetEditor, users can define and use custom variables in QSS. 
 
 Using following statement to define new variable:
 
@@ -132,8 +145,6 @@ QssStylesheetEditor will search the resource file filename.py(filename must be s
 
 
 # License
-Like PyQt5, this software is available under two licenses: the GPL v3, and Commercial License.
+You can use this software for free in open source projects that are licensed under the GPL. but there is an exception: if you only use it to generate qss file for commercial product, the product's source code can be shipped with whatever license you want.
 
-If you are willing to follow the terms of the GPL, this software is available to you under Open Source licenses which allows you to develop, modify and distribute your software freely.
-
-Alternatively, if you, your company or your organisation derive commercial benefit from the software and do not wish to distribute your complete source code you are required to use commercial licenses and purchase commercial version PyQt5.
+If you don't want to open your code up to the public, you can purchase a commercial license for USD 10 per developer, and also should purchase a commercial license for PyQt5.

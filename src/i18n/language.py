@@ -6,7 +6,7 @@ Copyright (c) 2019 lileilei <hustlei@sina.cn>
 import os
 from PyQt5.QtCore import QTranslator, QLibraryInfo, QLocale
 from PyQt5.QtWidgets import QApplication
-from config.base import ConfBase
+from config import Config
 
 
 class Language():
@@ -15,6 +15,7 @@ class Language():
     systrans = QTranslator()
     __inited = False
     __listInToml = []
+    lang = "en"
 
     @classmethod
     def loadList(cls):
@@ -23,9 +24,8 @@ class Language():
                 systrans,trans,分别是qtbase_xx.qm文件和当前语言的qm文件
         """
         Language.__listInToml = []
-        conf = ConfBase()
         try:
-            conf.read(os.path.join(os.path.dirname(__file__), "list.toml"))
+            conf = Config(os.path.join(os.path.dirname(__file__), "list.toml"))
             languages = conf.getSec("languages")
             for k, v in languages.items():
                 langitem = {}
@@ -73,10 +73,8 @@ class Language():
         """根据配置文件读取语言配置，如果没有找到当前系统配置
         :return:
         """
-        configfile = os.path.join(os.path.dirname(__file__), "../config/config.toml")
-        config = ConfBase()
-        config.read(configfile)
-        Language.lang = config.getSec("general").get("language", "")
+        config = Config.current()
+        Language.lang = config["general.language"]
 
         if not Language.lang.strip():
             # import locale

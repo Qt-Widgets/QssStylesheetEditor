@@ -9,8 +9,8 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QStyleFactory, QAction, 
                              QCheckBox, QComboBox, QTabWidget, QDockWidget)
 
 # from res.img_rc import *
-from .editor import CodeEditor
-from .preview import previewWidget
+from CodeEditor import Editor
+from .preview import PreviewWidget
 from .flow_layout import QFlowLayout
 
 
@@ -24,7 +24,7 @@ class MainWinBase(QMainWindow):
         self.menubar = self.menuBar()
         self.statusbar = self.statusBar()
         self.mainWidget = QTabWidget()
-        self.editor = CodeEditor()
+        self.editor = Editor()
 
         self.actions = {}
         self.menus = {}
@@ -269,7 +269,7 @@ class MainWinBase(QMainWindow):
         self.docks["color"] = QDockWidget(self.tr("Color Variables"))
         self.docks["preview"] = QDockWidget(self.tr("Preview"))
 
-        self.docks["color"].setMinimumSize(QSize(120, 20))
+        self.docks["color"].setMinimumSize(QSize(80, 20))
         self.docks["color"].setFeatures(QDockWidget.AllDockWidgetFeatures)
         self.docks["preview"].setMinimumSize(QSize(200, 200))
         self.docks["preview"].setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
@@ -285,11 +285,11 @@ class MainWinBase(QMainWindow):
         # self.colorPanelLayout = QFlowLayout()
         colorPanelWidget.setLayout(self.colorPanelLayout)
         self.docks["color"].setWidget(colorPanelWidget)
-        self.docks["preview"].setWidget(previewWidget())
+        self.docks["preview"].setWidget(PreviewWidget())
 
         self.docks["color"].visibilityChanged.connect(self.actions["ShowColor"].setChecked)
 
     def createMainWidget(self):
         self.setCentralWidget(self.mainWidget)
         self.mainWidget.setTabBarAutoHide(True)
-        self.mainWidget.addTab(self.editor, self.tr("main", "editor tab in tabwidget of mainwidget"))
+        self.mainWidget.addTab(self.editor, self.tr("main", "CodeEditor tab in tabwidget of mainwidget"))

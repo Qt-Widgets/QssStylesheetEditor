@@ -2,17 +2,38 @@ English | [简体中文](todo_zh-CN.md)
 
 # ToDo
 
-+ Refactor code
-    - rewrite config for editor
 + Qsst sample
 + Docs
     - Help
     - Qss tutorial
++ Binary package
+    - using pyinstaller or fbs
 
 + ToDo or not?
     - qss only support /* */ comment , add inline comment syntax?
 
 # ChangeLog
+
+## v1.7
+
+Main Changes: **update config, fixed ISSUES*
+
++ **New Features**
+    - add auto export qss features
++ **BugsFixed**
+    - fixed ISSUES
+
+
+## v1.6
+Main Changes: **split editor, config etc to single package, test for multi platform*
+
++ **New Features**
+    - add setup.py for installing by `python setup.py install`
+    - rewrite config for editor, and move codeeditor and config to single package and uplaod to pypi;
+    - improve code quality by static analysis
++ **BugsFixed**
+    - fixed chardet import error
+    - fixed binary file detect error
 
 ## v1.5
 Main Changes: **reference image in resource file in qsst**
@@ -21,7 +42,7 @@ Main Changes: **reference image in resource file in qsst**
     - Support reference image in resource file:url(:/img/close.png);
     - When there isn't UI language setted, autodetect the os language, if there isn't tranlation, set to english
     - Readme english version set to default
-    - Add code analysis, test scripts and config file 
+    - Add code analysis, test scripts and config file
 
 ## v1.4
 Main Changes: **i18n, settings**

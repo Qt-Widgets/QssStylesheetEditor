@@ -1,12 +1,12 @@
 ﻿# -*- coding: utf-8 -*-
-"""
-Copyright (c) 2019 lileilei <hustlei@sina.cn>
+"""Copyright (c) 2019 lileilei <hustlei@sina.cn>
 """
 import os
 import re
 import sys
 
-from PyQt5.QtWidgets import (qApp, QWidget, QLabel, QPushButton, QColorDialog, QFileDialog, QMessageBox)
+from PyQt5.QtWidgets import (qApp, QWidget, QLabel, QPushButton, QColorDialog, QFileDialog, QMessageBox, QFormLayout,
+                             QVBoxLayout, QHBoxLayout)
 from PyQt5.QtGui import QIcon, QColor, qGray, QFont
 from PyQt5.QtCore import Qt, QSize
 # import sip
@@ -20,7 +20,7 @@ from .recent import Recent
 class MainWin(MainWinBase):
     def __init__(self):
         super().__init__()
-        self.ver = "v1.50"
+        self.ver = "v1.70"
         self.title = "QssStylesheet Editor " + self.ver
         self.setWindowTitle(self.title)
         self.setWindowIcon(QIcon("res/app.ico"))
@@ -29,25 +29,24 @@ class MainWin(MainWinBase):
         self.file = None
         self.lastSavedText = ""
         self.newIndex = 0
-        self.confDialog = None
+        self.firstAutoExport = True
         # ui
         self.setAcceptDrops(True)
+        # conf
+        self.recent = Recent(self.open, self.submenus["recent"])
+        self.config = Config.current()
+        self.confDialog = ConfDialog(self)
         # self.setupUi()
         self.setupActions()
-        self.recent = Recent(self.open, self.submenus["recent"])
         if self.tr("LTR") == "RTL":
             self.setLayoutDirection(Qt.RightToLeft)
-        # conf
-        self.config = Config()
-        self.configfile = os.path.join(os.path.dirname(__file__), "../config/config.toml")
-        self.useConfig()
         # lang
         # from i18n.language import Language as Lang
         # Lang.getConfigLang(self)
         # Lang.setLang()
         # init
         self.__isNewFromTemplate = False
-        self.newWithTemplate()
+        self.newFromTemplate()
         self.statusbar.showMessage(self.tr("Ready"))
 
     def setupActions(self):
@@ -89,7 +88,7 @@ class MainWin(MainWinBase):
 
         self.docks["color"].dockLocationChanged.connect(sizeDock)
 
-        # main editor
+        # main CodeEditor
         self.editor.keyPress.connect(self.textChanged)
 
         def rend():
@@ -108,13 +107,12 @@ class MainWin(MainWinBase):
         self.editor.drop.connect(self.dropEvent)
 
         # setting
-        self.confDialog = ConfDialog(self)
         self.actions["config"].triggered.connect(self.confDialog.show)
 
         # help
         aboutText = "<b><center>" + self.title + "</center></b><br><br>"
         aboutText += self.tr(
-            "This software is a advanced editor for QtWidget stylesheet(Qss), <br>support custom variable and "
+            "This software is a advanced CodeEditor for QtWidget stylesheet(Qss), <br>support custom variable and "
             "real-time preview.<br><br> ")
         aboutText += self.tr(
             "author: lileilei<br>website: <a href='https://github.com/hustlei/QssStylesheetEditor'>https"
@@ -126,7 +124,7 @@ class MainWin(MainWinBase):
         linefrom, _, lineto, _ = self.editor.getSelection()  # __ is posfrom posto
         linefrom += 1
         lineto += 1
-        if (linefrom == 0 or lineto == 0):
+        if not (linefrom and lineto):
             text = self.tr("select: none")
         else:
             text = self.tr("select:ln") + str(linefrom) + self.tr(" - ln") + str(lineto)
@@ -165,7 +163,7 @@ class MainWin(MainWinBase):
                 resn, _ = os.path.splitext(os.path.basename(res))
                 if os.path.exists(res):
                     if resp not in sys.path:
-                        sys.path.append(resp)
+                        sys.path.appendToChild(resp)
                     try:
                         __import__(resn)
                     except BaseException:
@@ -182,7 +180,7 @@ class MainWin(MainWinBase):
                     c.setNamedColor(cstr)
                     self.editor.setBackgroundColor(c)
                 except Exception:
-                    pass
+                    print("set background clolor exception.")
 
     def textChanged(self, e):  # QKeyEvent(QEvent.KeyPress, Qt.Key_Enter, Qt.NoModifier)
         # if (32<e.key()<96 or 123<e.key()<126 or 0x1000001<e.key()<0x1000005 or e.key==Qt.Key_Delete):
@@ -221,20 +219,36 @@ class MainWin(MainWinBase):
             while self.colorPanelLayout.count() > 0:
                 self.colorPanelLayout.removeItem(self.colorPanelLayout.itemAt(0))
             self.clrBtnDict = {}
+            labels = {}
+            widLabel = 0
+            widBtn = 0
             for varName, clrStr in self.qsst.varDict.items():
-                contianerWidget = QWidget()
-                contianerWidget.setMinimumSize(QSize(140, 25))
-                label = QLabel(varName, contianerWidget)
-                label.setFont(QFont("Arial", 9, QFont.Medium))
-                btn = QPushButton(clrStr, contianerWidget)
+                label = QLabel(varName)#, contianerWidget)
+                btn = QPushButton(clrStr)#, contianerWidget)
+                if sys.platform.startswith("win"):
+                    font1 = QFont("Arial", 10, QFont.Medium)
+                    font2 = QFont("sans-serif", 9, QFont.Medium)
+                    label.setFont(font1)
+                    btn.setFont(font2)
                 self.clrBtnDict[varName] = btn
-                # label.setFixedWidth(80)
-                # btn.setFixedWidth(100)
-                label.move(5, 10)
-                btn.move(80, 5)
-                self.colorPanelLayout.addWidget(contianerWidget)
-                self.colorPanelLayout.setSpacing(5)
+                labels [varName] = label
+                label.adjustSize()
+                widLabel = label.width() if label.width() > widLabel else widLabel
+                btn.adjustSize()
+                widBtn = btn.width() if btn.width() > widBtn else widBtn
+                #label.move(5, 5)
+                #btn.move(100, 5)
                 btn.clicked.connect(lambda x, var=varName: self.chclr(var))
+            for name, btn in self.clrBtnDict.items():
+                contianerWidget = QWidget()
+                lay = QHBoxLayout()
+                labels[name].setFixedWidth(widLabel)
+                btn.setFixedWidth(widBtn)
+                lay.addWidget(labels[name])
+                lay.addWidget(btn)
+                contianerWidget.setLayout(lay)
+                #contianerWidget.setMinimumSize(QSize(185, 25))
+                self.colorPanelLayout.addWidget(contianerWidget)
 
         for varName, btn in self.clrBtnDict.items():
             clrStr = self.qsst.varDict[varName]
@@ -284,7 +298,7 @@ class MainWin(MainWinBase):
             pos = self.editor.verticalScrollBar().sliderPosition()
             self.editor.selectAll()
             self.editor.replaceSelectedText(self.qsst.srctext)  # setText(self.qsst.srctext)
-            # self.editor.setCursorPosition(xp,yp)
+            # self.CodeEditor.setCursorPosition(xp,yp)
             self.editor.verticalScrollBar().setSliderPosition(pos)
             self.renderStyle()
 
@@ -316,7 +330,8 @@ class MainWin(MainWinBase):
 
     def new(self):
         if self.editor.isModified():
-            ret = QMessageBox.question(self, self.title, self.tr("Current file hasn't been saved, do you want to save?"),
+            ret = QMessageBox.question(self, self.title,
+                                       self.tr("Current file hasn't been saved, do you want to save?"),
                                        QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel, QMessageBox.No)
             if ret == QMessageBox.Yes:
                 self.save()
@@ -332,9 +347,10 @@ class MainWin(MainWinBase):
         self.setWindowTitle(self.title + " - " + os.path.basename(self.file))
         self.editor.setModified(False)
 
-    def newWithTemplate(self, templatefile="data/default.qsst"):
+    def newFromTemplate(self, templatefile="data/default.qsst"):
         if self.editor.isModified():
-            ret = QMessageBox.question(self, self.title, self.tr("Current file hasn't been saved, do you want to save?"),
+            ret = QMessageBox.question(self, self.title,
+                                       self.tr("Current file hasn't been saved, do you want to save?"),
                                        QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel, QMessageBox.No)
             if ret == QMessageBox.Yes:
                 self.save()
@@ -356,6 +372,7 @@ class MainWin(MainWinBase):
             self.setWindowTitle(self.title + " - " + os.path.basename(self.file))
             self.actions["save"].setEnabled(False)
             self.recent.addFile(self.file)
+            self.autoExport(self.file)
         else:
             self.saveAs()
 
@@ -374,6 +391,8 @@ class MainWin(MainWinBase):
             self.setWindowTitle(self.title + " - " + os.path.basename(file))
             self.actions["save"].setEnabled(False)
             self.recent.addFile(self.file)
+            self.autoExport(self.file)
+            self.firstAutoExport = True
 
     def export(self):
         self.qsst.convertQss()
@@ -384,8 +403,21 @@ class MainWin(MainWinBase):
             f = os.path.splitext(self.file)[0]
         savefile, _ = QFileDialog.getSaveFileName(self, self.tr("export Qss"), f, "Qss(*.qss);;all(*.*)")
         if savefile:
-            with open(savefile, 'w', newline='') as f:
+            with open(savefile, 'w', newline='', encoding ='utf-8') as f:
                 f.write(self.qsst.qss)
+
+    def autoExport(self, file):
+        if self.config["advance.autoexportqss"]:
+            self.qsst.convertQss()
+            qssfile = os.path.splitext(file)[0] + ".qss"
+            backupfile = qssfile + ".backup"
+            if self.firstAutoExport and os.path.exists(qssfile):
+                if os.path.exists(backupfile):
+                    os.remove(backupfile)
+                os.rename(qssfile, backupfile)
+            with open(qssfile, 'w', newline='', encoding ='utf-8') as f:
+                f.write(self.qsst.qss)
+                self.firstAutoExport = False
 
     def dragEnterEvent(self, qDragEnterEvent):
         if qDragEnterEvent.mimeData().hasUrls():
@@ -394,9 +426,9 @@ class MainWin(MainWinBase):
             # qDragEnterEvent.setDropAction(Qt::CopyAction Qt::MoveAction
             # Qt::LinkAction Qt::IgnoreAction Qt::TargetMoveAction)
 
-    def dropEvent(self, QDropEvent):
-        if QDropEvent.mimeData().hasUrls():
-            file = QDropEvent.mimeData().urls()[0].toLocalFile()
+    def dropEvent(self, objQDropEvent):
+        if objQDropEvent.mimeData().hasUrls():
+            file = objQDropEvent.mimeData().urls()[0].toLocalFile()
             if os.path.exists(file):
                 self.open(file=file)
 
@@ -417,26 +449,17 @@ class MainWin(MainWinBase):
                     self.save()
                     e.ignore()
                 elif ret in (QMessageBox.Discard, QMessageBox.No):
-                    self.updateConfig()
+                    self.updateSpecialConfig()
                     self.config.save()
                     qApp.exit()
                 else:
                     e.ignore()
         else:
-            self.updateConfig()
-            self.config.save()
+            self.updateSpecialConfig()
+            self.config.saveDefault()
 
-    def updateConfig(self):
+    def updateSpecialConfig(self):
+        """get new options, some option canbe changed without config dialog."""
         self.config.getSec("file")["recent"] = self.recent.getList()
-        self.config.getSec("file")["recentcount"] = self.recent.maxcount
-        self.config.getSec("editor")["fontsize"] = self.editor.font().pointSize()
 
-    def useConfig(self):
-        self.config.read()
-        recentlist = self.config.getSec("file").get("recent")
-        if recentlist is not None:
-            self.recent.setList(recentlist)
-        maxcount = self.config.getSec("file").get("recentcount")
-        if maxcount is not None:
-            self.recent.maxcount = maxcount
-        self.editor.font().setPointSize(self.config.getSec("editor").get("fontsize", 11))
+
