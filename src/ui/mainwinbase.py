@@ -125,10 +125,14 @@ class MainWinBase(QMainWindow):
                                                 None,
                                                 ":appres.img/view.png",
                                                 checkable=True)
+        self.actions["Palette"] = createAct(self.tr("&Palette"), self.tr("ShowPaletteSettingDialog"), None,
+                                            ":appres.img/texture.png")
         self.actions["ShowPreview"].setChecked(True)
 
         self.actions["config"] = createAct(self.tr("&Config"), self.tr("settings."), None, ":appres.img/config.png")
 
+        self.actions["checkupdate"] = createAct(self.tr("&Check for Updates..."),
+                                                self.tr("Check is there new version released for update."))
         self.actions["about"] = createAct(self.tr("&About"), self.tr("About"))
 
         # self.exitAct.triggered.connect(qApp.exit)#等价于qApp.quit
@@ -176,10 +180,12 @@ class MainWinBase(QMainWindow):
 
         self.menus["View"].addAction(self.actions["ShowColor"])
         self.menus["View"].addAction(self.actions["ShowPreview"])
+        self.menus["View"].addAction(self.actions["Palette"])
 
         self.menus["Tool"].addAction(self.actions["config"])
 
         self.menus["Help"].addAction(self.actions["about"])
+        self.menus["Help"].addAction(self.actions["checkupdate"])
 
         for m in self.menus.values():
             self.menubar.addMenu(m)
@@ -231,6 +237,7 @@ class MainWinBase(QMainWindow):
         self.toolbars["View"] = QToolBar(self.tr("View"))
         self.toolbars["View"].addAction(self.actions["ShowColor"])
         self.toolbars["View"].addAction(self.actions["ShowPreview"])
+        self.toolbars["View"].addAction(self.actions["Palette"])
 
         self.toolbars["Echo"] = QToolBar(self.tr("Echo"))
         self.toolbars["Echo"].addAction(self.actions["fontup"])

@@ -14,6 +14,7 @@ from PyQt5.QtCore import Qt, QSize
 from config import Config, ConfDialog
 from qss_template import Qsst
 from .mainwinbase import MainWinBase
+from .palettedialog import PaletteDialog
 from .recent import Recent
 
 
@@ -32,10 +33,14 @@ class MainWin(MainWinBase):
         self.firstAutoExport = True
         # ui
         self.setAcceptDrops(True)
+        self.currentUIqss = ""
+        self.paletteDailog = PaletteDialog(self)
+        self.updatedialog = None
         # conf
         self.recent = Recent(self.open, self.submenus["recent"])
         self.config = Config.current()
-        self.confDialog = ConfDialog(self)
+        self.confDialog = ConfDialog(self)  # , self)
+        self.confDialog.setMinimumWidth(650)
         # self.setupUi()
         self.setupActions()
         if self.tr("LTR") == "RTL":
@@ -47,6 +52,8 @@ class MainWin(MainWinBase):
         # init
         self.__isNewFromTemplate = False
         self.newFromTemplate()
+
+        self.checkforupdate()
         self.statusbar.showMessage(self.tr("Ready"))
 
     def setupActions(self):
@@ -69,6 +76,7 @@ class MainWin(MainWinBase):
         self.actions["paste"].triggered.connect(self.editor.paste)
         self.actions["ShowColor"].triggered.connect(self.docks["color"].setVisible)
         self.actions["ShowPreview"].triggered.connect(self.docks["preview"].setVisible)
+        self.actions["Palette"].triggered.connect(self.paletteDailog.show)
         self.actions["find"].triggered.connect(self.editor.find)
         self.actions["replace"].triggered.connect(self.editor.replace)
         self.actions["echospace"].triggered.connect(
@@ -89,14 +97,16 @@ class MainWin(MainWinBase):
         self.docks["color"].dockLocationChanged.connect(sizeDock)
 
         # main CodeEditor
-        self.editor.keyPress.connect(self.textChanged)
+        self.changed = False
+        self.editor.textChanged.connect(self.textChanged)
+        self.editor.keyPress.connect(self.keyPressed)
 
         def rend():
             self.renderStyle()
             self.loadColorPanel()
 
         self.editor.loseFocus.connect(rend)
-        self.editor.mouseLeave.connect(rend)
+        # self.editor.mouseLeave.connect(rend)
         self.editor.mousePress.connect(rend)
         self.editor.linesChanged.connect(
             lambda: self.status["lines"].setText(self.tr("lines:") + str(self.editor.lines())))
@@ -112,13 +122,14 @@ class MainWin(MainWinBase):
         # help
         aboutText = "<b><center>" + self.title + "</center></b><br><br>"
         aboutText += self.tr(
-            "This software is a advanced CodeEditor for QtWidget stylesheet(Qss), <br>support custom variable and "
+            "This software is a advanced CodeEditor for QtWidget stylesheet(Qss), support custom variable and "
             "real-time preview.<br><br> ")
         aboutText += self.tr(
             "author: lileilei<br>website: <a href='https://github.com/hustlei/QssStylesheetEditor'>https"
             "://github.com/hustlei/QssStylesheetEditor</a><br><br>welcom communicate with me: hustlei@sina.cn ")
         aboutText += "<br>copyright &copy; 2019, lilei."
         self.actions["about"].triggered.connect(lambda: QMessageBox.about(self, "about", aboutText))
+        self.actions["checkupdate"].triggered.connect(lambda: self.checkforupdate(True))
 
     def __setSelectStatus(self):
         linefrom, _, lineto, _ = self.editor.getSelection()  # __ is posfrom posto
@@ -132,19 +143,22 @@ class MainWin(MainWinBase):
 
     def unuseQss(self, unuse):
         if unuse:
-            qApp.setStyleSheet('')
+            self.docks["preview"].setStyleSheet('')
+            self.setStyleSheet('')
         else:
+            self.setStyleSheet(self.currentUIqss)
             self.renderStyle()
             self.loadColorPanel()
 
     def renderStyle(self):
         self.qsst.srctext = self.editor.text()
-        self.qsst.loadVars()
+        if not self.qsst.loadVars():
+            return
         self.qsst.convertQss()
 
         norand = self.actions["DisableQss"].isChecked()
         if norand:
-            qApp.setStyleSheet('')
+            self.docks["preview"].setStyleSheet('')
         else:
             # self.setStyleSheet(self.qsst.qss)#tooltip透明等显示不出来
             # try:
@@ -168,7 +182,7 @@ class MainWin(MainWinBase):
                         __import__(resn)
                     except BaseException:
                         pass
-            qApp.setStyleSheet(styleSheet)
+            self.docks["preview"].setStyleSheet(styleSheet)
 
             #     self.statusbar.showMessage("")#不起作用
             # except Exception:
@@ -182,14 +196,18 @@ class MainWin(MainWinBase):
                 except Exception:
                     print("set background clolor exception.")
 
-    def textChanged(self, e):  # QKeyEvent(QEvent.KeyPress, Qt.Key_Enter, Qt.NoModifier)
+    def keyPressed(self, e):  # QKeyEvent(QEvent.KeyPress, Qt.Key_Enter, Qt.NoModifier)
         # if (32<e.key()<96 or 123<e.key()<126 or 0x1000001<e.key()<0x1000005 or e.key==Qt.Key_Delete):
         # 大键盘为Ret小键盘为Enter
-        if (e.key() in (Qt.Key_Return, Qt.Key_Enter, Qt.Key_Semicolon, Qt.Key_BraceRight, Qt.Key_Up, Qt.Key_Down,
-                        Qt.Key_Left, Qt.Key_Right, Qt.Key_Tab, Qt.Key_Delete, Qt.Key_Backspace)):
-            self.renderStyle()
-            self.loadColorPanel()
+        if self.changed:
+            if (e.key() in (Qt.Key_Return, Qt.Key_Enter, Qt.Key_Semicolon, Qt.Key_BraceRight, Qt.Key_Up, Qt.Key_Down,
+                            Qt.Key_Left, Qt.Key_Right, Qt.Key_Tab, Qt.Key_Delete, Qt.Key_Backspace)):
+                self.renderStyle()
+                self.loadColorPanel()
+                self.changed = False
 
+    def textChanged(self):
+        self.changed = True
         self.actions["undo"].setEnabled(self.editor.isUndoAvailable())
         self.actions["redo"].setEnabled(self.editor.isRedoAvailable())
 
@@ -203,7 +221,8 @@ class MainWin(MainWinBase):
 
     def loadColorPanel(self):
         self.qsst.srctext = self.editor.text()
-        self.qsst.loadVars()
+        if not self.qsst.loadVars():
+            return
         # item = self.colorGridLayout.itemAt(0)
         # while (item != None):
         #     self.colorGridLayout.removeItem(item)
@@ -223,21 +242,21 @@ class MainWin(MainWinBase):
             widLabel = 0
             widBtn = 0
             for varName, clrStr in self.qsst.varDict.items():
-                label = QLabel(varName)#, contianerWidget)
-                btn = QPushButton(clrStr)#, contianerWidget)
+                label = QLabel(varName)  # , contianerWidget)
+                btn = QPushButton(clrStr)  # , contianerWidget)
                 if sys.platform.startswith("win"):
                     font1 = QFont("Arial", 10, QFont.Medium)
                     font2 = QFont("sans-serif", 9, QFont.Medium)
                     label.setFont(font1)
                     btn.setFont(font2)
                 self.clrBtnDict[varName] = btn
-                labels [varName] = label
+                labels[varName] = label
                 label.adjustSize()
                 widLabel = label.width() if label.width() > widLabel else widLabel
                 btn.adjustSize()
                 widBtn = btn.width() if btn.width() > widBtn else widBtn
-                #label.move(5, 5)
-                #btn.move(100, 5)
+                # label.move(5, 5)
+                # btn.move(100, 5)
                 btn.clicked.connect(lambda x, var=varName: self.chclr(var))
             for name, btn in self.clrBtnDict.items():
                 contianerWidget = QWidget()
@@ -247,7 +266,7 @@ class MainWin(MainWinBase):
                 lay.addWidget(labels[name])
                 lay.addWidget(btn)
                 contianerWidget.setLayout(lay)
-                #contianerWidget.setMinimumSize(QSize(185, 25))
+                # contianerWidget.setMinimumSize(QSize(185, 25))
                 self.colorPanelLayout.addWidget(contianerWidget)
 
         for varName, btn in self.clrBtnDict.items():
@@ -260,9 +279,15 @@ class MainWin(MainWinBase):
                     lable = c[3]
                 else:
                     lable = 255
-                color = QColor(c[0], c[1], c[2], lable)
+                try:
+                    color = QColor(int(c[0]), int(c[1]), int(c[2]), lable)
+                except Exception:
+                    continue
             else:
-                color = QColor(clrStr)
+                try:
+                    color = QColor(clrStr)
+                except Exception:
+                    continue
             s = ''
             if qGray(color.rgb()) < 100:
                 s += "color:white;"
@@ -287,7 +312,7 @@ class MainWin(MainWinBase):
             else:
                 # 'rgba({},{},{},{})'.format(color.red(), color.green(), color.blue(), color.alpha())
                 clrstr = color.name(QColor.HexArgb).upper()
-            #     s = 'font-size:8px;'
+            # s = 'font-size:8px;'
             if qGray(color.rgb()) < 100:
                 s += 'color:white;'
             self.clrBtnDict[var].setText(clrstr)
@@ -368,7 +393,8 @@ class MainWin(MainWinBase):
     def save(self):
         if (self.file and os.path.exists(self.file)):
             self.lastSavedText = self.editor.text()
-            self.editor.save(self.file)
+            self.editor.save(self.file.encode("utf-8"))
+            self.status["coding"].setText("utf-8")
             self.setWindowTitle(self.title + " - " + os.path.basename(self.file))
             self.actions["save"].setEnabled(False)
             self.recent.addFile(self.file)
@@ -387,7 +413,8 @@ class MainWin(MainWinBase):
         if file:
             self.file = file
             self.lastSavedText = self.editor.text()
-            self.editor.save(self.file)
+            self.editor.save(self.file.encode("utf-8"))
+            self.status["coding"].setText("utf-8")
             self.setWindowTitle(self.title + " - " + os.path.basename(file))
             self.actions["save"].setEnabled(False)
             self.recent.addFile(self.file)
@@ -403,7 +430,7 @@ class MainWin(MainWinBase):
             f = os.path.splitext(self.file)[0]
         savefile, _ = QFileDialog.getSaveFileName(self, self.tr("export Qss"), f, "Qss(*.qss);;all(*.*)")
         if savefile:
-            with open(savefile, 'w', newline='', encoding ='utf-8') as f:
+            with open(savefile, 'w', newline='', encoding='utf-8') as f:
                 f.write(self.qsst.qss)
 
     def autoExport(self, file):
@@ -415,7 +442,7 @@ class MainWin(MainWinBase):
                 if os.path.exists(backupfile):
                     os.remove(backupfile)
                 os.rename(qssfile, backupfile)
-            with open(qssfile, 'w', newline='', encoding ='utf-8') as f:
+            with open(qssfile, 'w', newline='', encoding='utf-8') as f:
                 f.write(self.qsst.qss)
                 self.firstAutoExport = False
 
@@ -462,4 +489,47 @@ class MainWin(MainWinBase):
         """get new options, some option canbe changed without config dialog."""
         self.config.getSec("file")["recent"] = self.recent.getList()
 
+    def autocheckforupdate(self):
+        from datetime import datetime
+        today = datetime.now().date()
+        tmp1 = self.config["update.autocheck"]
+        if not isinstance(tmp1, bool):
+            tmp1 = True
+        if tmp1:
+            tmp2 = self.config["update.checkfreq"]
+            if not tmp2:
+                tmp2 = "start"
+            if tmp2 == "start":
+                self.checkforupdate()
+            lastcheckday = self.config["update.lastcheckday"]
+            if not lastcheckday:
+                self.checkforupdate()
+            else:
+                deltaday = today - lastcheckday
+                d = deltaday.days
+                if (tmp2 == "day" and d >= 1) or (tmp2 == "week" and d >= 7) or (tmp2 == "month" and d >= 30):
+                    self.checkforupdate()
 
+    def checkforupdate(self, showdialogifnotupdate=False):
+        self.statusbar.showMessage(self.tr("checking for update..."))
+
+        def aftcall(newver):
+            ver = self.ver.strip('vV')
+            if not newver:
+                if not showdialogifnotupdate:
+                    return
+                newver = "[network err]"
+            if showdialogifnotupdate or newver > ver:
+                if not self.updatedialog:
+                    self.updatedialog = updateinfodialog(self)
+                self.updatedialog.setWindowIcon(self.windowIcon())
+                self.updatedialog.showdialog(ver, newver, "https://github.com/hustlei/QssStylesheetEditor/releases")
+
+            from datetime import datetime
+            today = datetime.now().date()
+            self.config["update.lastcheckday"] = today
+
+        from update import AsyncGetLatestVer, updateinfodialog
+        self.t = AsyncGetLatestVer("hustlei", "QssStylesheetEditor")
+        self.t.got.connect(aftcall)
+        self.t.start()

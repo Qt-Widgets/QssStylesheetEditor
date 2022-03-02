@@ -1,39 +1,39 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
-
 # with open("readme.md", "r", encoding='utf-8') as fh:
 # long_desc = fh.read()
 
 # import os
 # def clearpyc(srcpath):
-    # files = os.listdir(srcpath)
-    # for fd in files:
-        # cur_path = os.path.join(srcpath, fd)            
-        # if os.path.isdir(cur_path):
-            # if fd == "__pycache__":
-                # print("rm %s -rf" % cur_path)
-                # os.system("rm %s -rf" % cur_path)
-            # else:
-                # clearpyc(cur_path)
+# files = os.listdir(srcpath)
+# for fd in files:
+# cur_path = os.path.join(srcpath, fd)
+# if os.path.isdir(cur_path):
+# if fd == "__pycache__":
+# print("rm %s -rf" % cur_path)
+# os.system("rm %s -rf" % cur_path)
+# else:
+# clearpyc(cur_path)
 # clearpyc(os.path.join(os.path.dirname(__file__),'src'))
 
 setup(
     name="QssStylesheetEditor",  # ProjectName
     version="1.7",
     python_requires='>=3.0.*, <4',  # python的依赖关系
-    install_requires=['CodeEditor', 'preimport', 'tomlconfig'],
+    install_requires=["requests>=2.0", "preimport>=1.1.0", "tomlconfig>=1.2.1", "CodeEditor>=1.1.0"],
 
     # Module
     package_dir={'': 'src'},  # tell distutils packages are under src
     packages=find_packages(where='src', include=('*'), exclude=[
         '*.__pycache__',
     ]),  #
-    py_modules=['app', 'bootstrapper'],  # single file
+    py_modules=['app'],  # , 'bootstrapper'],  # single file
 
     # data
     package_data={
         'config': ['*.toml'],  # *.toml files found in config package
+        'config.skin': ['*.qss'],
         'data': ['*.qss', '*.qsst'],
         'i18n': ['*.qm', '*.toml'],
         'res': ['*'],
@@ -59,7 +59,7 @@ setup(
             'qssteditor = app:main',  # __main__
         ],
         "gui_scripts": [
-            'QssStylesheetEditor = bootstrapper',
+            'QssStylesheetEditor = app:main',
         ]
     },
 
@@ -85,7 +85,7 @@ setup(
 # python setup.py build  # 编译
 # python setup.py sdist  # zip格式包
 # python setup.py bdist_wininst # exe格式包
-# python setup.py bdist_rpm # rpm格式包
+# python setup.py bdist_rpm # rpm格式包  bdist_wheel wheel包
 # python setup.py bdist --help-formats # 获取所有支持的平台
 # python setup.py --help-commands 显示相关可用命令
 # python setup.py install #安装

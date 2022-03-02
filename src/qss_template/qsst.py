@@ -5,7 +5,7 @@ Copyright (c) 2019 lileilei <hustlei@sina.cn>
 """
 
 import re
-
+from PyQt5.QtGui import QColor
 
 class Qsst():
     """qss template"""
@@ -32,16 +32,30 @@ class Qsst():
         """
         if qssStr is None:
             qssStr = self.srctext
-        self.varUsed = re.findall(r':[ \t\w,.:()]*[$]([\w]+)', qssStr)
-        varsDefined = re.findall(r'[$](\w+)\s*=[ \t]*([#(),.\w]*)[\t ]*[\r\n;\/]+', qssStr)
+        self.varUsed = list(set(re.findall(r':[ \t\w,.:()]*[$]([\w]+)', qssStr)))
+        varsDefined = list(set(re.findall(r'[$](\w+)\s*=[ \t]*([#(),.\w]*)[\t ]*[\r\n;\/]+', qssStr)))
+
         self.varDict = {}
+        valerr = False
         for var, val in varsDefined:
-            self.varDict[var] = val
+            if not valerr:
+                if val in QColor.colorNames():
+                    self.varDict[var] = val
+                else:
+                    valerrind = re.match(
+                        r'#[0-9A-Fa-f]{1,8}|rgb\(\s*[0-9]*\s*(,\s*[0-9]*\s*){2}\)|rgba\(\s*[0-9]*\s*(,\s*[0-9]*\s*){3}\)',
+                        val)
+                    if not valerrind:
+                        valerr = True
+                    else:
+                        self.varDict[var] = val
+
         self.varUndefined = []
         for varused in self.varUsed:
             if varused not in self.varDict.keys():
                 self.varDict[varused] = ''
                 self.varUndefined.append(varused)
+        return not valerr  # 如果有变量的值格式不正确返回false
 
     def runCodeBlocks(self):
         """代码块中可以放QPalette的定义，如果有Qpalette定义，在预览的时候需要先运行代码块中的定义"""
@@ -51,30 +65,32 @@ class Qsst():
                 eval("from PyQt5.QtGui import QPalette")
                 for code in self.codeBlocks:
                     exec(code)
-            except:
+            except Exception:
                 print("warning: codeblock in qsst exec error.")
 
     def convertQss(self):
         """根据varDict中变量的值，把模板文件中引用的变量用值替换，转换为qss文件。
         """
+        try:
+            qssStr = self.srctext
+            varDict = self.varDict
+            self.loadVars()
+            # 删除变量定义
+            varsDefined = re.compile(r'[$](\w+)\s*=[ \t]*([#(),.\w]*)[ \t;]*[\r\n]{0,2}')
+            qssStr = varsDefined.sub("", qssStr)
 
-        qssStr = self.srctext
-        varDict = self.varDict
-        self.loadVars()
-        # 删除变量定义
-        varsDefined = re.compile(r'[$](\w+)\s*=[ \t]*([#(),.\w]*)[ \t;]*[\r\n]{0,2}')
-        qssStr = varsDefined.sub("", qssStr)
-
-        for v in self.varDict:
-            if v in varDict.keys():
-                # qssStr = qssStr.replace("$" + v, varDict[v])
-                qssStr = re.sub(r'[$](\w+)([\s;]*)', lambda m:'{}{}'.format(varDict[m.group(1)], m.group(2)), qssStr)
-            else:
-                self.varUndefined.append(v)
-                # qssStr = qssStr.replace("$" + v, ' ')
-                qssStr = re.sub(r'[$](\w+)([\s;]*)', lambda m:'{}{}'.format(" ", m.group(2)), qssStr)
-        # 删除代码块
-        qssStr = self.reCodeBlock.sub("", qssStr)
+            for v in self.varDict:
+                if v in varDict.keys():
+                    # qssStr = qssStr.replace("$" + v, varDict[v])
+                    qssStr = re.sub(r'[$](\w+)([\s;]*)', lambda m: '{}{}'.format(varDict[m.group(1)], m.group(2)), qssStr)
+                else:
+                    self.varUndefined.append(v)
+                    # qssStr = qssStr.replace("$" + v, ' ')
+                    qssStr = re.sub(r'[$](\w+)([\s;]*)', lambda m: '{}{}'.format(" ", m.group(2)), qssStr)
+            # 删除代码块
+            qssStr = self.reCodeBlock.sub("", qssStr)
+        except:
+            return
         self.qss = qssStr
 
     # def replaceVarsInQss(self,val):

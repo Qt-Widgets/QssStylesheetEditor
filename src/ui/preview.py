@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding:utf-8 -*-
 """widgets preview panel
 
@@ -39,7 +38,7 @@ Copyright (c) 2019 lileilei <hustlei@sina.cn>
 
 from PyQt5.QtCore import Qt, QSize, QRect, QDate, QTime, QDateTime, QRegExp
 from PyQt5.QtGui import (QIcon, QPen, QBrush, QPixmap, QPainter, QLinearGradient, QRadialGradient, QConicalGradient,
-                         QDoubleValidator, QRegExpValidator, QStandardItemModel)
+                         QDoubleValidator, QRegExpValidator, QStandardItemModel, QKeySequence, QFont)
 from PyQt5.QtWidgets import (
     QWidget,
     QApplication,
@@ -89,7 +88,11 @@ from PyQt5.QtWidgets import (
     QDirModel,
     QCompleter,
     QMenu,
+    QToolBar,
+    QAction,
+    QMainWindow,
 )
+from .customeditor import SrcEditor
 
 # from res.img_rc import *
 
@@ -105,18 +108,21 @@ class PreviewWidget(QTabWidget):
         tab4 = QWidget(self)
         tab5 = QWidget(self)
         tab6 = QWidget(self)
+        tab7 = QMainWindow(self)
         self.addTab(tab1, self.tr("Basic"))  # ,"常用组件"))
         self.addTab(tab2, self.tr("Special"))  # ,"特别组件"))
         self.addTab(tab3, self.tr("Drawing"))  # ,"绘图组件"))
         self.addTab(tab4, self.tr("Layout"))  # ,"布局组件"))
         self.addTab(tab5, self.tr("Container"))  # ,"容器组件"))
         self.addTab(tab6, self.tr("Advance"))  # ,"高级组件"))
+        self.addTab(tab7, self.tr("Custom"))  # ,"高级组件"))
         self.setupTab1(tab1)
         self.setupTab2(tab2)
         self.setupTab3(tab3)
         self.setupTab4(tab4)
         self.setupTab5(tab5)
         self.setupTab6(tab6)
+        self.setupTab7(tab7)
 
     # def chTextMode(self, editable):
     #     btns = self.dockColors.findChildren(QPushButton)
@@ -148,6 +154,7 @@ class PreviewWidget(QTabWidget):
 
         # Label TextBox
         group1 = QGroupBox("Text")
+        group1.setCheckable(True)
         group1layout = QHBoxLayout()
         group1.setLayout(group1layout)
         layout.addWidget(group1)
@@ -223,6 +230,7 @@ class PreviewWidget(QTabWidget):
 
         # Button
         group2 = QGroupBox("Button")
+        group2.setCheckable(True)
         group2layout = QVBoxLayout()
         group2.setLayout(group2layout)
         layout.addWidget(group2)
@@ -296,6 +304,7 @@ class PreviewWidget(QTabWidget):
 
         # Selecting Input
         group4 = QGroupBox("Selectable")
+        group4.setCheckable(True)
         group4Layout = QVBoxLayout()
         layoutRow1 = QHBoxLayout()
         group4Layout.addLayout(layoutRow1)
@@ -320,6 +329,7 @@ class PreviewWidget(QTabWidget):
 
         # TextEdit
         group5 = QGroupBox("TextEdit")
+        group5.setCheckable(True)
         group5Layout = QVBoxLayout()
         group5.setLayout(group5Layout)
         layout.addWidget(group5)
@@ -391,6 +401,7 @@ class PreviewWidget(QTabWidget):
 
         # DateTime
         group1 = QGroupBox("DateTime")
+        group1.setCheckable(True)
         group1Layout = QHBoxLayout()
         layoutRow1 = QVBoxLayout()
         layoutRow2 = QVBoxLayout()
@@ -418,6 +429,7 @@ class PreviewWidget(QTabWidget):
 
         # Slider
         group2 = QGroupBox("Sliders")
+        group2.setCheckable(True)
         group2Layout = QVBoxLayout()
         layoutRow1 = QHBoxLayout()
         layoutRow2 = QHBoxLayout()
@@ -469,6 +481,7 @@ class PreviewWidget(QTabWidget):
 
         # Meter
         group3 = QGroupBox("Meters")
+        group3.setCheckable(True)
         layRow = QHBoxLayout()
         group3.setLayout(layRow)
         layout.addWidget(group3)
@@ -588,6 +601,7 @@ class PreviewWidget(QTabWidget):
                 p.end()
 
         group1 = QGroupBox("DrawGraphics")
+        group1.setCheckable(True)
         group1Layout = QHBoxLayout()
         group1.setLayout(group1Layout)
         layout.addWidget(group1)
@@ -597,13 +611,19 @@ class PreviewWidget(QTabWidget):
 
         # picture
         group2 = QGroupBox("Pictures")
+        group2.setCheckable(True)
         group2Layout = QHBoxLayout()
         group2.setLayout(group2Layout)
         layout.addWidget(group2)
 
         pic1 = QLabel()
         pic1.setPixmap(QPixmap(":appres.img/cup.jpg"))
-        group2Layout.addWidget(pic1)
+        pic1text = QLabel("QLabel")
+        pic1text.setAlignment(Qt.AlignHCenter)
+        pic1layout = QVBoxLayout()
+        pic1layout.addWidget(pic1)
+        pic1layout.addWidget(pic1text)
+        group2Layout.addLayout(pic1layout)
         group2Layout.addStretch(1)
 
         class Pic(QWidget):
@@ -622,7 +642,12 @@ class PreviewWidget(QTabWidget):
                 p.drawPixmap(s, img, s)
                 p.end()
 
-        group2Layout.addWidget(Pic())
+        pic2text = QLabel("QWidget Paint")
+        pic2text.setAlignment(Qt.AlignHCenter)
+        pic2layout = QVBoxLayout()
+        pic2layout.addWidget(Pic())
+        pic2layout.addWidget(pic2text)
+        group2Layout.addLayout(pic2layout)
         group2Layout.addStretch(1)
 
         layout.addStretch(1)
@@ -648,6 +673,7 @@ class PreviewWidget(QTabWidget):
         layout.addWidget(group1)
 
         group2 = QGroupBox(self.tr("QGridLayout"))  # , "QGridLayout布局"))
+        group2.setCheckable(True)
         hbox = QGridLayout()
         hbox.addWidget(QLabel(self.tr("First line:")), 0, 0)  # "第一行数据："))
         hbox.addWidget(QLabel(self.tr("Second line:")), 1, 0)
@@ -663,6 +689,7 @@ class PreviewWidget(QTabWidget):
         layout.addWidget(group2)
 
         group3 = QGroupBox(self.tr("QFormLayout"))  # "QFormLayout布局"))
+        group3.setCheckable(True)
         hbox = QFormLayout()
 
         hbox.addRow(self.tr("please input data"), QLineEdit())  # "请输入数据：")
@@ -676,6 +703,7 @@ class PreviewWidget(QTabWidget):
         layout.addWidget(group3)
 
         group4 = QGroupBox("Spliter MDI Dock")
+        group4.setCheckable(True)
         hbox = QHBoxLayout()
         group4.setLayout(hbox)
         layout.addWidget(group4)
@@ -727,7 +755,15 @@ class PreviewWidget(QTabWidget):
         group.setLayout(hbox)
         layout.addWidget(group)
 
+        group = QGroupBox(self.tr("QGroupBox"))  # "QGroupBox控件"))
+        group.setCheckable(True)
+        hbox = QHBoxLayout()
+        hbox.addWidget(QLabel(self.tr("this is a checkable QGroupBox widget")))  # "这是一个QGroupBox控件")))
+        group.setLayout(hbox)
+        layout.addWidget(group)
+
         group = QGroupBox(self.tr("StackLayout"))  # "StackLayout布局"))
+        group.setCheckable(True)
         hbox = QHBoxLayout()
         group.setLayout(hbox)
         listWidget = QListWidget()
@@ -765,6 +801,7 @@ class PreviewWidget(QTabWidget):
         layout.addWidget(group)
 
         group = QGroupBox("ToolBox")
+        group.setCheckable(True)
         lay = QVBoxLayout()
         group.setLayout(lay)
         layout.addWidget(group)
@@ -788,6 +825,7 @@ class PreviewWidget(QTabWidget):
         lay.addWidget(t1)
 
         group = QGroupBox("TabWidget")
+        group.setCheckable(True)
         lay = QVBoxLayout()
         lay1 = QHBoxLayout()
         lay2 = QHBoxLayout()
@@ -928,6 +966,99 @@ class PreviewWidget(QTabWidget):
         tree2.setModel(folder)
         lay.addWidget(tree1)
         lay.addWidget(tree2)
+
+    def setupTab7(self, tab):
+        """Custom widgets for preview panel"""
+
+        # tools
+        def createAct(text, tip=None, shortcut=None, iconimg=None, checkable=False, slot=None):
+            action = QAction(self.tr(text), self)
+            if iconimg is not None:
+                action.setIcon(QIcon(iconimg))
+            if shortcut is not None:
+                action.setShortcut(shortcut)
+            if tip is not None:
+                tip = self.tr(tip)
+                action.setToolTip(tip)
+                action.setStatusTip(tip)
+            if checkable:
+                action.setCheckable(True)
+            if slot is not None:
+                action.triggered.connect(slot)
+            return action
+
+        def keys2str(standardkey):
+            return "".join(("(", QKeySequence(standardkey).toString(), ")"))
+
+        srcediter = SrcEditor()
+        toolbar = QToolBar("source")
+        actnew = createAct(self.tr("&New", "&New"),
+                           self.tr("new") + keys2str(QKeySequence.New),
+                           QKeySequence.New,
+                           ':appres.img/NewDocument.png',
+                           slot=srcediter.clear)
+        actopen = createAct(self.tr("&Open"),
+                            self.tr("Open") + keys2str(QKeySequence.Open),
+                            QKeySequence.Open,
+                            ':appres.img/openHS.png',
+                            slot=srcediter.open)
+        actsave = createAct(self.tr("&Save"),
+                            self.tr("Save") + keys2str(QKeySequence.Save),
+                            QKeySequence.Save,
+                            ':appres.img/save.png',
+                            slot=srcediter.saveslot)
+        actsaveas = createAct(self.tr("&Save as..."),
+                              self.tr("Save as..."),
+                              None,
+                              ':appres.img/SaveAs.png',
+                              slot=lambda: {srcediter.saveas(), actsave.setEnabled(False)})
+        toolbar.addAction(actnew)
+        toolbar.addAction(actopen)
+        toolbar.addAction(actsave)
+        toolbar.addAction(actsaveas)
+        tab.addToolBar(toolbar)
+
+        toolbar2 = QToolBar("edit")
+        actundo = createAct(self.tr("&Undo"),
+                            self.tr("Undo") + keys2str(QKeySequence.Undo),
+                            QKeySequence.Undo,
+                            ':appres.img/undo.png',
+                            slot=srcediter.undo)
+        actredo = createAct(self.tr("&Redo"),
+                            self.tr("Redo") + keys2str(QKeySequence.Redo),
+                            QKeySequence.Redo,
+                            ':appres.img/redo.png',
+                            slot=srcediter.redo)
+        actfind = createAct(self.tr("&Find"),
+                            self.tr("Find") + keys2str(QKeySequence.Find),
+                            QKeySequence.Find,
+                            ':appres.img/find.png',
+                            slot=srcediter.find)
+        actreplace = createAct(self.tr("&Replace"),
+                               self.tr("Replace") + keys2str(QKeySequence.Replace),
+                               QKeySequence.Replace,
+                               ':appres.img/replace.png',
+                               slot=srcediter.replace)
+        toolbar2.addAction(actredo)
+        toolbar2.addAction(actundo)
+        toolbar2.addAction(actfind)
+        toolbar2.addAction(actreplace)
+        tab.addToolBar(toolbar2)
+
+        toolbar3 = QToolBar("preview")
+        actpreview = createAct(self.tr("Preview"), self.tr("Preview custom ui using qss."))
+        actpreview.setFont(QFont("SimHei, STHeiti, Arial", 12, QFont.Medium))
+        toolbar3.addAction(actpreview)
+        tab.addToolBar(toolbar3)
+
+        tab.setCentralWidget(srcediter)
+
+        tab.statusbar = tab.statusBar()
+        tab.statusbar.showMessage(self.tr("Define a class named 'MainWindow' and press the preview button."))
+
+        actpreview.triggered.connect(srcediter.preview)
+        actsave.setEnabled(False)
+        srcediter.textChanged.connect(lambda: {actsave.setEnabled(srcediter.isModified())})
 
 
 if __name__ == "__main__":

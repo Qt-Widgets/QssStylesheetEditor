@@ -1,6 +1,6 @@
 ;QssStylesheetEditor Installer, compiled by nsis mui2
 ;Author: lileilei
-;lastedited: 2019.10
+;lastedited: 2021.7
 
 
 ;!pragma warning error all ;警告作为错误
@@ -23,14 +23,14 @@ SetCompressor /SOLID /FINAL lzma  ;使用zip会被360误报为病毒 ;/FINAL ，后边调用的
 
     !define ProductName "QssStylesheetEditor"  ;产品名，和项目名相同
     !define StartFile "AppStart" ;.exe文件名,启动软件的exe名称
-    !define Version "1.6" ;版本
+    !define Version "1.7" ;版本
     !define Publisher "lileilei" ;发布人
     !define Website "https://github.com/hustlei/QssStylesheetEditor" ;网站地址
     !define Year "2019"    
     !define Brand "hustlei,${Year} @wuhan" ;品牌,作者声明
     
     ;资源
-    !define LICENSE "License.rtf"
+    #!define LICENSE "License.rtf"
     !define ICON "img\install.ico" ;安装包图标
     !define HEADER "img\header.bmp"
     !define SIDE "img\side.bmp"
@@ -114,7 +114,6 @@ SetCompressor /SOLID /FINAL lzma  ;使用zip会被360误报为病毒 ;/FINAL ，后边调用的
     !define MUI_UNFINISHPAGE_NOAUTOCLOSE ;不自动跳到完成页面, 允许用户检查卸载记录
 
 
-
 /*** 安装界面 ***/
 ;--------------------------------
 ;Include
@@ -125,13 +124,14 @@ SetCompressor /SOLID /FINAL lzma  ;使用zip会被360误报为病毒 ;/FINAL ，后边调用的
     #!include "nsDialogs.nsh"
     #!include "WordFunc.nsh"
     
+
 ;--------------------------------
 ;install pages
 
     #!define MUI_PAGE_CUSTOMFUNCTION_SHOW show ;欢迎页面设置函数
     !insertmacro MUI_PAGE_WELCOME ;1.欢迎页面
-    
-    !insertmacro MUI_PAGE_LICENSE ${LICENSE} ;2.许可协议页面
+
+    !insertmacro MUI_PAGE_LICENSE $(LICENSE) ;2.许可协议页面
     
     !insertmacro MUI_PAGE_COMPONENTS ;3.组件选择页面
     ShowInstDetails show ;设置是否显示安装详细信息。区段里可以使用 SetDetailsView 来更改它的设置。
@@ -174,6 +174,11 @@ SetCompressor /SOLID /FINAL lzma  ;使用zip会被360误报为病毒 ;/FINAL ，后边调用的
     #!insertmacro MUI_LANGUAGE "Japanese"
     #!insertmacro MUI_LANGUAGE "Korean"
     #!insertmacro MUI_LANGUAGE "TradChinese"
+
+    LicenseLangString LICENSE ${LANG_ENGLISH} "License.rtf"
+    LicenseLangString LICENSE ${LANG_SIMPCHINESE} "License.zh_cn.rtf"
+    # http://blog.sina.com.cn/s/blog_6aeaee7e0100smr3.html
+
     
 ;--------------------------------
 ;Reserve Files
@@ -186,7 +191,6 @@ SetCompressor /SOLID /FINAL lzma  ;使用zip会被360误报为病毒 ;/FINAL ，后边调用的
     #!insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
     #ReserveFile "my.dll"   ;如果你使用了固实压缩，安装前使用的文件必须储存在数据块的开始，可以让你的安装程序启动的更快。
                             ;在你的区段和函数之前，为这些文件使用预留文件命令。
-
 
 
 

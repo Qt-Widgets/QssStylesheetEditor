@@ -10,29 +10,27 @@ English | [简体中文](readme_zh-CN.md)
 <br>
 
 QssStylesheetEditor is a powerful qt stylesheet(QSS) editor.
-Real-time preview, automatically completion, and user can define custom variables.
-
-
-> **Now I want to change a new name for QssStylesheetEditor, welcome everyone to vote: <https://github.com/hustlei/QssStylesheetEditor/issues/4>**
+Real-time preview, automatically completion, and user can define custom variables,
+preview custom ui code, using QPalette etc.
 
 
 # screenshot
 
-![GUI(v1.5) screeshot](https://hustlei.github.io/software/QssStylesheetEditor/screenshot/en/QssStylesheetEditor_v1.5.png  "GUI(v1.5)")
+![GUI(v1.7) screeshot](https://hustlei.github.io/software/QssStylesheetEditor/screenshot/en/QssStylesheetEditor_v1.7.png  "GUI(v1.7)")
 
 # Features
 
 + Qss code highlight and code folding
 + Automatic completion
-+ In-time preview
-+ Almost all of the qtwidgets can be previewed
++ In-time preview, Almost all of the qtwidgets can be previewed
++ Custom ui code preview
 + Customize variables and reference in Qss
 + Change variable color through color dialog box
-+ Reference image by relative path
-+ Reference image in resource files
++ Reference image by relative path or in resource files
++ Reference QPalette, and change QPalette via color dialog box
 + Switch different system themes (xp, vista etc.)
 + Internationalization
-  + Now Chinese and English translations are available
+  + Now English Chainese and Russian translations are available
 
 # Platform
 
@@ -46,14 +44,14 @@ Real-time preview, automatically completion, and user can define custom variable
 
 Follow the steps as below, or install the binary installation package:
 
-1. download [QssStylesheetEditor-1.6-py3-none-any.whl](https://github.com/hustlei/QssStylesheetEditor/releases)
-2. run `pip install QssStylesheetEditor-1.6-py3-none-any.whl` install QssStylesheetEditor
-3. run `qsseditor` or `QssStylesheetEditor` the app will started
+1. download [QssStylesheetEditor-1.7-py3-none-any.whl](https://github.com/hustlei/QssStylesheetEditor/releases)
+2. run `pip install QssStylesheetEditor-1.7-py3-none-any.whl` install QssStylesheetEditor
+3. run `qsseditor` or `QssStylesheetEditor` the app will start
 
 If you are windows 64bit user, binary package and installer is available now.
 
-+ [QssStylesheetEditor1.6_win64_installer.exe](https://github.com/hustlei/QssStylesheetEditor/releases)
-+ QssStylesheetEditor1.6_win64_portable.7z [[Download]](https://pan.baidu.com/s/1d8QJH6EbGcZXi7GjbkPlsQ) (security code: j7fc)
++ [QssStylesheetEditor1.7_win64_installer.exe](https://github.com/hustlei/QssStylesheetEditor/releases)
++ QssStylesheetEditor1.7_win64_portable.7z [[Download]](https://pan.baidu.com/s/1T0zzM4Y6h1SwHBsliEUbTQ) (security code: 65kn)
 
 
 > Alternatively, manually install the package is ok too
@@ -63,15 +61,16 @@ If you are windows 64bit user, binary package and installer is available now.
 >>     - preimport: `pip install preimport`
 >>     - tomlconfig: `pip install tomlconfig`
 >>     - CodeEditor: `pip install CodeEditor`
+>>     - requests: `pip install requests`
 >> 3. download and unzip package:
->>     + download [QssStylesheetEditor_v1.6.zip](https://github.com/hustlei/QssStylesheetEditor/releases)
->>     + unzip and change dir to QssStylesheetEditor_v1.6 `cd QssStylesheetEditor_v1.6`
+>>     + download [QssStylesheetEditor_v1.7.zip](https://github.com/hustlei/QssStylesheetEditor/releases)
+>>     + unzip and change dir to QssStylesheetEditor_v1.7 `cd QssStylesheetEditor_v1.7`
 >> 4. Run QssStylesheetEditor:
 >>     + double click qsseditor.pyw
 >>     + or run `python qsseditor.pyw`
 
 
-## Using custom variable 
+# Using custom variable 
 
 In QssStylesheetEditor, users can define and use custom variables in QSS. 
 
@@ -80,10 +79,11 @@ Using following statement to define new variable:
 ~~~js
 /*example of custom variable definition*/
 $background = #fff;  /* define var with name "background" */
-$text = red; /* define var with name "text" */
+$border = red; /* define var with name "border" */
+$text     = rgb(10,10,10);
 ~~~
 
-A variable definition end with a ";".
+> A variable definition end with a ";".
 
 Reference defined variable as following:
 
@@ -108,7 +108,7 @@ When a variable is defined in QssStylesheetEditor, the variable will be automati
 
 > If an undefined variable is referenced, it will be automatically recognized and displayed in the color panel too. 
 
-## Image reference path
+# Image reference path
 
 When images are use in the qss code, if the url is relative,  QssStylesheetEditor will find the image file in the folder where the qss code file is.
 
@@ -130,6 +130,38 @@ background-image: url(":/img/close.png");
 
 QssStylesheetEditor will search the resource file filename.py(filename must be same of qss file) in the directory of the currently opened qss stylesheet code file and loads it automatically.
 
+# QPalette reference
+
+In QssStylesheetEditor, users can use QPalette as follow：
+
+~~~
+color: palette(Text);
+background-color: palette(Window);
+~~~
+
+Changing color of QPalette is supported via pick-up color in palettdialog.
+And the new QPalette code can be viewed via click the "ViewPaletteCode" button.
+
+<img src="https://hustlei.github.io/software/QssStylesheetEditor/screenshot/PaletteDlg_V1.7.png" style="max-height:480px;max-width:960px" />
+
+> The reset button in PaletteDialogreset could cancel QPalette modification.
+
+# custom ui code preview
+
+In the  editor of 'Custom' tab of preview widget, user can input custom ui code, like follow:
+
+~~~
+class MainWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+~~~
+
+and then press 'Preview' button to preview the qss.
+
+> 'MainWindow' must be defined in the custom code.
+
+<img src="https://hustlei.github.io/software/QssStylesheetEditor/screenshot/CustomPreview_v1.7.png" style="max-height:480px;max-width:960px" />
+
 # screenshot
 
 <div><span><b>AutoComplete</b></span></div>
@@ -147,4 +179,4 @@ QssStylesheetEditor will search the resource file filename.py(filename must be s
 # License
 You can use this software for free in open source projects that are licensed under the GPL. but there is an exception: if you only use it to generate qss file for commercial product, the product's source code can be shipped with whatever license you want.
 
-If you don't want to open your code up to the public, you can purchase a commercial license for USD 10 per developer, and also should purchase a commercial license for PyQt5.
+If you don't want to open your code up to the public, you can purchase a commercial license for USD 100 per developer, and also should purchase a commercial license for PyQt5.
